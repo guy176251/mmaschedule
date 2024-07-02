@@ -1,6 +1,8 @@
-package main
+package scraper
 
 type Event struct {
+	Url          string  `json:"url"`
+	Slug         string  `json:"slug"`
 	Name         string  `json:"name"`
 	Location     string  `json:"location"`
 	Organization string  `json:"organization"`
@@ -19,6 +21,7 @@ type Fighter struct {
 	Name    string `json:"name"`
 	Image   string `json:"image"`
 	Country string `json:"country"`
+	Link    string `json:"link"`
 }
 
 type EventCallback func(e *Event)

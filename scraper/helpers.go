@@ -1,9 +1,10 @@
-package main
+package scraper
 
 import (
 	"bytes"
 	"encoding/json"
 	"hash/fnv"
+	"log"
 	"regexp"
 	"strings"
 
@@ -33,4 +34,13 @@ func HashJSON(v any) uint32 {
 	h := fnv.New32a()
 	h.Write(out)
 	return h.Sum32()
+}
+
+func PrintJSON(v any) {
+	out, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println(string(out))
+	}
 }
