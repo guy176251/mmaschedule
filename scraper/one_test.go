@@ -12,15 +12,15 @@ var ONEEventHTML []byte
 var ONEEventListHTML []byte
 
 func TestONEEventList(t *testing.T) {
-	PrintJSON(ParseONEEventList(ONEEventListHTML))
+	print_json(parse_one_event_list(ONEEventListHTML))
 }
 
 func TestONEEvent(t *testing.T) {
-	PrintJSON(ParseONEEvent("some_url", ONEEventHTML))
+	print_json(parse_one_event("some_url", ONEEventHTML))
 }
 
 func testScrapeONE(t *testing.T) {
-	ScrapeONE(func(e *Event) {
-		PrintJSON(e)
+	scrape_one(func(e *Event) {
+		print_json(e)
 	})
 }

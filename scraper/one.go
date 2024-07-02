@@ -10,31 +10,24 @@ import (
 	"github.com/gocolly/colly"
 )
 
-type ONEEventLocation struct {
+type event_location struct {
 	Name string `json:"name"`
 }
 
-type ONEEventData struct {
-	Name      string           `json:"name"`
-	StartDate string           `json:"startDate"`
-	Image     []string         `json:"image"`
-	Location  ONEEventLocation `json:"location"`
+type event_data struct {
+	Name      string         `json:"name"`
+	StartDate string         `json:"startDate"`
+	Image     []string       `json:"image"`
+	Location  event_location `json:"location"`
 }
 
-func ONECollector() *colly.Collector {
-	return colly.NewCollector(
-		colly.UserAgent(USER_AGENT),
-		colly.AllowedDomains("onefc.com", "www.onefc.com"),
-	)
-}
-
-func ScrapeONE(callback EventCallback) {
-	list := ONECollector()
-	detail := ONECollector()
+func scrape_one(callback EventCallback) {
+	list := one_collector()
+	detail := one_collector()
 	url := ""
 
 	list.OnResponse(func(r *colly.Response) {
-		for _, u := range ParseONEEventList(r.Body) {
+		for _, u := range parse_one_event_list(r.Body) {
 			url = u
 			log.Printf("Visiting %s\n", u)
 			if err := detail.Visit(u); err != nil {
@@ -44,7 +37,7 @@ func ScrapeONE(callback EventCallback) {
 	})
 
 	detail.OnResponse(func(r *colly.Response) {
-		callback(ParseONEEvent(url, r.Body))
+		callback(parse_one_event(url, r.Body))
 	})
 
 	if err := list.Visit("https://www.onefc.com/events/"); err != nil {
@@ -52,23 +45,26 @@ func ScrapeONE(callback EventCallback) {
 	}
 }
 
-func ParseONEEventList(b []byte) []string {
-	return DocumentFromBytes(b).Find(".is-event a.is-image-zoom[href]").Map(func(i int, s *goquery.Selection) string {
+func parse_one_event_list(b []byte) []string {
+	return document_from_bytes(b).Find(".is-event a.is-image-zoom[href]").Map(func(i int, s *goquery.Selection) string {
 		url, _ := s.Attr("href")
 		return url
 	})
 }
 
-func ParseONEEvent(url string, b []byte) *Event {
+func parse_one_event(url string, b []byte) *Event {
 	event := Event{Organization: "ONE", Url: url}
-	doc := DocumentFromBytes(b)
+	doc := document_from_bytes(b)
 
-	data := ONEEventData{}
+	data := event_data{}
 	_ = json.Unmarshal([]byte(doc.Find("#site-main script[type=\"application/ld+json\"]").Text()), &data)
 
 	event.Name = data.Name
-	event.Image = data.Image[2]
 	event.Location = data.Location.Name
+
+	if len(data.Image) > 2 {
+		event.Image = data.Image[2]
+	}
 
 	date, err := time.Parse(time.RFC3339, data.StartDate)
 	if err == nil {
@@ -76,23 +72,23 @@ func ParseONEEvent(url string, b []byte) *Event {
 	}
 
 	doc.Find(".event-matchup").Each(func(i int, s *goquery.Selection) {
-		event.Fights = append(event.Fights, *ParseONEFight(s))
+		event.Fights = append(event.Fights, *parse_one_fight(s))
 	})
 
 	return &event
 }
 
-func ParseONEFight(s *goquery.Selection) *Fight {
+func parse_one_fight(s *goquery.Selection) *Fight {
 	fight := Fight{}
 
-	fight.Weight = TextContent(s, ".title")
-	fight.FighterA = ParseONEFighter(s, true)
-	fight.FighterB = ParseONEFighter(s, false)
+	fight.Weight = text_content(s, ".title")
+	fight.FighterA = parse_one_fighter(s, true)
+	fight.FighterB = parse_one_fighter(s, false)
 
 	return &fight
 }
 
-func ParseONEFighter(s *goquery.Selection, is_a bool) *Fighter {
+func parse_one_fighter(s *goquery.Selection, is_a bool) *Fighter {
 	fighter := Fighter{}
 	nth_child := "1"
 	face := "1"
@@ -102,11 +98,18 @@ func ParseONEFighter(s *goquery.Selection, is_a bool) *Fighter {
 		face = "2"
 	}
 
-	fighter.Name = TextContent(s, fmt.Sprintf("tr.vs :nth-child(%s) a", nth_child))
-	fighter.Country = TextContent(s, fmt.Sprintf("tr.vs + tr :nth-child(%s)", nth_child))
+	fighter.Name = text_content(s, fmt.Sprintf("tr.vs :nth-child(%s) a", nth_child))
+	fighter.Country = text_content(s, fmt.Sprintf("tr.vs + tr :nth-child(%s)", nth_child))
 
 	image, _ := s.Find(fmt.Sprintf(".face%s img[src]", face)).Attr("src")
 	fighter.Image = image
 
 	return &fighter
+}
+
+func one_collector() *colly.Collector {
+	return colly.NewCollector(
+		colly.UserAgent(USER_AGENT),
+		colly.AllowedDomains("onefc.com", "www.onefc.com"),
+	)
 }

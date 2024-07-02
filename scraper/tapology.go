@@ -16,14 +16,7 @@ type TapologyResult struct {
 	Url  string `json:"url"`
 }
 
-func tapology_collector() *colly.Collector {
-	return colly.NewCollector(
-		colly.UserAgent(USER_AGENT),
-		colly.AllowedDomains("tapology.com", "www.tapology.com"),
-	)
-}
-
-func TapologyGetter() func(n string) []TapologyResult {
+func tapology_getter() func(n string) []TapologyResult {
 	csrf_token := ""
 	name := ""
 	results := []TapologyResult{}
@@ -74,11 +67,18 @@ func TapologyGetter() func(n string) []TapologyResult {
 func parse_tapology_results(b []byte) []TapologyResult {
 	results := []TapologyResult{}
 
-	DocumentFromBytes(b).Find("span.star a[href]").Each(func(i int, s *goquery.Selection) {
+	document_from_bytes(b).Find("span.star a[href]").Each(func(i int, s *goquery.Selection) {
 		url, _ := s.Attr("href")
 		name := s.Text()
 		results = append(results, TapologyResult{Name: name, Url: url})
 	})
 
 	return results
+}
+
+func tapology_collector() *colly.Collector {
+	return colly.NewCollector(
+		colly.UserAgent(USER_AGENT),
+		colly.AllowedDomains("tapology.com", "www.tapology.com"),
+	)
 }

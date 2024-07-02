@@ -10,14 +10,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func ufc_collector() *colly.Collector {
-	return colly.NewCollector(
-		colly.UserAgent(USER_AGENT),
-		colly.AllowedDomains("ufc.com", "www.ufc.com"),
-	)
-}
-
-func ScrapeUFC(callback EventCallback) {
+func scrape_ufc(callback EventCallback) {
 	list := ufc_collector()
 	detail := ufc_collector()
 	url := ""
@@ -43,7 +36,7 @@ func ScrapeUFC(callback EventCallback) {
 
 func parse_ufc_event_list(b []byte) []string {
 	urls := []string{}
-	doc := DocumentFromBytes(b)
+	doc := document_from_bytes(b)
 
 	doc.Find(".c-card-event--result__headline a").Each(func(i int, s *goquery.Selection) {
 		slug, ok := s.Attr("href")
@@ -57,13 +50,13 @@ func parse_ufc_event_list(b []byte) []string {
 
 func parse_ufc_event(url string, b []byte) *Event {
 	event := Event{Organization: "UFC", Url: url}
-	doc := DocumentFromBytes(b)
+	doc := document_from_bytes(b)
 
 	parts := doc.Find(".c-hero__headline-prefix, .c-hero__headline").Map(func(i int, s *goquery.Selection) string {
-		return CleanupString(s.Text())
+		return cleanup_string(s.Text())
 	})
 	event.Name = strings.Join(parts, ": ")
-	event.Location = TextContent(doc, ".field--name-venue")
+	event.Location = text_content(doc, ".field--name-venue")
 	event.Slug = parse_ufc_slug(url)
 
 	image, ok := doc.Find(".c-hero__image img").First().Attr("src")
@@ -95,7 +88,7 @@ func parse_ufc_event(url string, b []byte) *Event {
 func parse_ufc_fight(s *goquery.Selection) *Fight {
 	fight := Fight{}
 
-	fight.Weight = strings.Replace(TextContent(s, ".c-listing-fight__class-text"), " Bout", "", -1)
+	fight.Weight = strings.Replace(text_content(s, ".c-listing-fight__class-text"), " Bout", "", -1)
 	fight.FighterA = parse_ufc_fighter(s, "red")
 	fight.FighterB = parse_ufc_fighter(s, "blue")
 
@@ -105,8 +98,8 @@ func parse_ufc_fight(s *goquery.Selection) *Fight {
 func parse_ufc_fighter(s *goquery.Selection, color string) *Fighter {
 	fighter := Fighter{}
 
-	fighter.Name = TextContent(s, ".c-listing-fight__corner-name--"+color)
-	fighter.Country = TextContent(s, ".c-listing-fight__country--"+color+" .c-listing-fight__country-text")
+	fighter.Name = text_content(s, ".c-listing-fight__corner-name--"+color)
+	fighter.Country = text_content(s, ".c-listing-fight__country--"+color+" .c-listing-fight__country-text")
 	image, ok := s.Find(".c-listing-fight__corner-image--" + color + " img").First().Attr("src")
 	if ok {
 		fighter.Image = image
@@ -124,4 +117,11 @@ func parse_ufc_slug(url string) string {
 		return matches[index]
 	}
 	return ""
+}
+
+func ufc_collector() *colly.Collector {
+	return colly.NewCollector(
+		colly.UserAgent(USER_AGENT),
+		colly.AllowedDomains("ufc.com", "www.ufc.com"),
+	)
 }
