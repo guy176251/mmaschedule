@@ -3,6 +3,8 @@ package scraper
 import (
 	"log"
 	"net/url"
+	"regexp"
+	"slices"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -16,16 +18,22 @@ type TapologyResult struct {
 	Url  string `json:"url"`
 }
 
-func tapology_getter() func(n string) []TapologyResult {
+type TapologyGetter func(n string) string
+
+func tapology_getter() TapologyGetter {
 	csrf_token := ""
 	name := ""
-	results := []TapologyResult{}
+	result := ""
 
 	index := tapology_collector()
 	index.OnHTML("meta[name=\"csrf-token\"]", func(h *colly.HTMLElement) {
 		csrf_token = h.Attr("content")
 		time.Sleep(5 * time.Second)
 	})
+
+	if err := index.Visit(tapology_url); err != nil {
+		log.Println(err)
+	}
 
 	search := tapology_collector()
 	search.AllowURLRevisit = true
@@ -41,39 +49,54 @@ func tapology_getter() func(n string) []TapologyResult {
 		log.Printf("Making tapology request to %s", r.URL)
 	})
 	search.OnResponse(func(r *colly.Response) {
-		results = parse_tapology_results(r.Body)
+		result = parse_tapology_results(name, r.Body)
 		time.Sleep(5 * time.Second)
 	})
 
-	if err := index.Visit(tapology_url); err != nil {
-		log.Println(err)
-	}
-
-	return func(n string) []TapologyResult {
+	return func(n string) string {
 		if csrf_token == "" {
-			return nil
+			return ""
 		}
 
 		name = n
 		if err := search.Visit(tapology_url + "/search/nav"); err != nil {
 			log.Println(err)
-			return nil
+			return ""
 		}
 
-		return results
+		return result
 	}
 }
 
-func parse_tapology_results(b []byte) []TapologyResult {
+var nickname *regexp.Regexp = regexp.MustCompile(`"(\w| )+"`)
+
+func parse_tapology_results(name string, b []byte) string {
 	results := []TapologyResult{}
 
 	document_from_bytes(b).Find("span.star a[href]").Each(func(i int, s *goquery.Selection) {
 		url, _ := s.Attr("href")
-		name := s.Text()
+		name := cleanup_whitespace(nickname.ReplaceAllString(s.Text(), ""))
 		results = append(results, TapologyResult{Name: name, Url: url})
 	})
 
-	return results
+	slices.SortStableFunc(results, func(a, b TapologyResult) int {
+		score_a := hamming_score(name, a.Name)
+		score_b := hamming_score(name, b.Name)
+
+		if score_a > score_b {
+			return -1
+		} else if score_a < score_b {
+			return 1
+		} else {
+			return 0
+		}
+	})
+
+	if len(results) < 1 {
+		return ""
+	}
+
+	return tapology_url + results[0].Url
 }
 
 func tapology_collector() *colly.Collector {

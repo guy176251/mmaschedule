@@ -8,15 +8,17 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/adrg/strutil"
+	"github.com/adrg/strutil/metrics"
 )
 
 func text_content(doc *goquery.Selection, selector string) string {
-	return cleanup_string(doc.Find(selector).First().Text())
+	return cleanup_whitespace(doc.Find(selector).First().Text())
 }
 
 var whitespace *regexp.Regexp = regexp.MustCompile(`\s+`)
 
-func cleanup_string(s string) string {
+func cleanup_whitespace(s string) string {
 	return strings.TrimSpace(whitespace.ReplaceAllString(s, " "))
 }
 
@@ -32,4 +34,10 @@ func print_json(v any) {
 	} else {
 		log.Println(string(out))
 	}
+}
+
+var hamming *metrics.Hamming = metrics.NewHamming()
+
+func hamming_score(a, b string) float64 {
+    return strutil.Similarity(a, b, hamming)
 }

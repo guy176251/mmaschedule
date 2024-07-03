@@ -53,7 +53,7 @@ func parse_ufc_event(url string, b []byte) *Event {
 	doc := document_from_bytes(b)
 
 	parts := doc.Find(".c-hero__headline-prefix, .c-hero__headline").Map(func(i int, s *goquery.Selection) string {
-		return cleanup_string(s.Text())
+		return cleanup_whitespace(s.Text())
 	})
 	event.Name = strings.Join(parts, ": ")
 	event.Location = text_content(doc, ".field--name-venue")

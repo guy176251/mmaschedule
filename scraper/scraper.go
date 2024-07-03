@@ -31,5 +31,18 @@ const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 
 var scrapers []EventScraper = []EventScraper{
 	scrape_ufc,
-    scrape_one,
+	scrape_one,
+}
+
+func ScrapeEvents(callback EventCallback) {
+	get_tapology := tapology_getter()
+
+	for _, scraper := range scrapers {
+		scraper(func(e *Event) {
+			for _, fight := range e.Fights {
+				fight.FighterA.Link = get_tapology(fight.FighterA.Name)
+			}
+            callback(e)
+		})
+	}
 }
