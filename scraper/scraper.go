@@ -1,5 +1,11 @@
 package scraper
 
+import (
+	"bytes"
+	"crypto/sha1"
+	"encoding/gob"
+)
+
 type Event struct {
 	Url          string  `json:"url"`
 	Slug         string  `json:"slug"`
@@ -9,6 +15,16 @@ type Event struct {
 	Image        string  `json:"image"`
 	Date         int     `json:"date"`
 	Fights       []Fight `json:"fights"`
+}
+
+func (e *Event) Hash() ([]byte, error) {
+	var buf bytes.Buffer
+	hasher := sha1.New()
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(e); err != nil {
+		return nil, err
+	}
+	return hasher.Sum(buf.Bytes()), nil
 }
 
 type Fight struct {
@@ -42,7 +58,7 @@ func ScrapeEvents(callback EventCallback) {
 			for _, fight := range e.Fights {
 				fight.FighterA.Link = get_tapology(fight.FighterA.Name)
 			}
-            callback(e)
+			callback(e)
 		})
 	}
 }
