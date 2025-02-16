@@ -53,9 +53,11 @@ SELECT
   json_extract (e.value, '$.fights'),
   json_extract (e.value, '$.history')
 FROM
-  json_each (?) AS e ON CONFLICT (url, slug) DO
-UPDATE
+  json_each (?) AS e
+WHERE true
+ON CONFLICT (url) DO UPDATE
 SET
+  slug = excluded.slug,
   name = excluded.name,
   location = excluded.location,
   organization = excluded.organization,

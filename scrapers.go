@@ -59,7 +59,7 @@ func ScrapeONE(client ClientScraper) (*[]*event.Event, error) {
 			return
 		}
 
-		if e.Fights != "null" {
+		if e.Fights == "null" {
 			return
 		}
 

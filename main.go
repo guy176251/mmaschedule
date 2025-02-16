@@ -3,8 +3,11 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"mmaschedule-go/event"
 
 	"github.com/pressly/goose/v3"
 )
@@ -13,20 +16,34 @@ import (
 var migrations embed.FS
 
 func main() {
-	db, err := sql.Open("sqlite3", "db.sqlite")
+	_, err := InitDb("db.sqlite")
 	if err != nil {
-		panic(err)
+		fmt.Println("Error initializing database: ", err)
+	}
+}
+
+func InitDb(name string) (*event.Queries, error) {
+	db, err := sql.Open("sqlite3", name)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("PRAGMA journal_mode = WAL")
+	if err != nil {
+		return nil, err
 	}
 
 	goose.SetBaseFS(migrations)
 
 	if err := goose.SetDialect("sqlite3"); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if err := goose.Up(db, "migrations"); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	// run app
+	queries := event.New(db)
+
+	return queries, nil
 }

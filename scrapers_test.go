@@ -105,25 +105,17 @@ func TestONE(t *testing.T) {
 	if err != nil {
 		t.Errorf("Scraping ONE failed: %s", err)
 	}
-	PrintJson(events)
+	if len(*events) == 0 {
+		t.Fatal("Scraping ONE failed: Events are empty")
+	}
+	//PrintJson(events)
 }
 
-func TestJSONString(t *testing.T) {
-	type User struct {
-		Name string
+func TestScrapeEvents(t *testing.T) {
+	client := DummyClient{}
+	q, err := InitDb("test-db.sqlite")
+	if err != nil {
+		t.Error("Error initializing database: ", err)
 	}
-
-	type Thing struct {
-		Users []User `json:"user,string"`
-		Num   int    `json:"num,string"`
-	}
-
-	u := Thing{
-		Users: []User{
-			{Name: "Bob"},
-			{Name: "John"},
-		},
-	}
-
-	PrintJson(u)
+	ScrapeEvents(q, &client)
 }
