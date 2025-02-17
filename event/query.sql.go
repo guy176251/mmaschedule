@@ -104,6 +104,46 @@ func (q *Queries) GetUpcomingEvent(ctx context.Context, date int64) (Event, erro
 
 const listEvents = `-- name: ListEvents :many
 SELECT
+  url, slug, name, location, organization, image, date, fights, history
+FROM
+  event
+`
+
+func (q *Queries) ListEvents(ctx context.Context) ([]Event, error) {
+	rows, err := q.db.QueryContext(ctx, listEvents)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Event
+	for rows.Next() {
+		var i Event
+		if err := rows.Scan(
+			&i.Url,
+			&i.Slug,
+			&i.Name,
+			&i.Location,
+			&i.Organization,
+			&i.Image,
+			&i.Date,
+			&i.Fights,
+			&i.History,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUpcomingEvents = `-- name: ListUpcomingEvents :many
+SELECT
   name,
   slug,
   date
@@ -115,21 +155,21 @@ ORDER BY
   date ASC
 `
 
-type ListEventsRow struct {
+type ListUpcomingEventsRow struct {
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 	Date int64  `json:"date"`
 }
 
-func (q *Queries) ListEvents(ctx context.Context, date int64) ([]ListEventsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listEvents, date)
+func (q *Queries) ListUpcomingEvents(ctx context.Context, date int64) ([]ListUpcomingEventsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUpcomingEvents, date)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListEventsRow
+	var items []ListUpcomingEventsRow
 	for rows.Next() {
-		var i ListEventsRow
+		var i ListUpcomingEventsRow
 		if err := rows.Scan(&i.Name, &i.Slug, &i.Date); err != nil {
 			return nil, err
 		}

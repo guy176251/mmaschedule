@@ -8,6 +8,12 @@ WHERE
 LIMIT
   1;
 
+-- name: ListEvents :many
+SELECT
+  *
+FROM
+  event;
+
 -- name: GetUpcomingEvent :one
 SELECT
   *
@@ -20,7 +26,7 @@ ORDER BY
 LIMIT
   1;
 
--- name: ListEvents :many
+-- name: ListUpcomingEvents :many
 SELECT
   name,
   slug,
