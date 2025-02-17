@@ -16,9 +16,12 @@ import (
 var migrations embed.FS
 
 func main() {
-	_, err := InitDb("db.sqlite")
+	q, err := InitDb("db.sqlite")
 	if err != nil {
 		fmt.Println("Error initializing database: ", err)
+	} else {
+		client := NewScraperClient()
+		ScrapeEvents(q, client)
 	}
 }
 

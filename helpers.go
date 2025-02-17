@@ -78,13 +78,17 @@ func (c *ScraperClient) GetResponse(url string, options ...RequestOption) (*http
 func (c *ScraperClient) AddHeader(key string, value string) {
 	c.headers[key] = value
 }
+func (c *ScraperClient) HasHeader(key string) bool {
+	_, exists := c.headers[key]
+	return exists
+}
 
-func NewScraperClient() ScraperClient {
+func NewScraperClient() *ScraperClient {
 	client := ScraperClient{
 		headers: map[string]string{
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
 		},
 		client: http.Client{},
 	}
-	return client
+	return &client
 }

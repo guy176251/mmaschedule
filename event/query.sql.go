@@ -9,6 +9,23 @@ import (
 	"context"
 )
 
+const createTapology = `-- name: CreateTapology :exec
+INSERT INTO
+  tapology (name, url)
+VALUES
+  (?, ?)
+`
+
+type CreateTapologyParams struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
+}
+
+func (q *Queries) CreateTapology(ctx context.Context, arg CreateTapologyParams) error {
+	_, err := q.db.ExecContext(ctx, createTapology, arg.Name, arg.Url)
+	return err
+}
+
 const getEvent = `-- name: GetEvent :one
 SELECT
   url, slug, name, location, organization, image, date, fights, history
@@ -53,4 +70,76 @@ func (q *Queries) GetTapology(ctx context.Context, name string) (Tapology, error
 	var i Tapology
 	err := row.Scan(&i.Name, &i.Url)
 	return i, err
+}
+
+const getUpcomingEvent = `-- name: GetUpcomingEvent :one
+SELECT
+  url, slug, name, location, organization, image, date, fights, history
+FROM
+  event
+WHERE
+  date >= ?
+ORDER BY
+  date ASC
+LIMIT
+  1
+`
+
+func (q *Queries) GetUpcomingEvent(ctx context.Context, date int64) (Event, error) {
+	row := q.db.QueryRowContext(ctx, getUpcomingEvent, date)
+	var i Event
+	err := row.Scan(
+		&i.Url,
+		&i.Slug,
+		&i.Name,
+		&i.Location,
+		&i.Organization,
+		&i.Image,
+		&i.Date,
+		&i.Fights,
+		&i.History,
+	)
+	return i, err
+}
+
+const listEvents = `-- name: ListEvents :many
+SELECT
+  name,
+  slug,
+  date
+FROM
+  event
+WHERE
+  date >= ?
+ORDER BY
+  date ASC
+`
+
+type ListEventsRow struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+	Date int64  `json:"date"`
+}
+
+func (q *Queries) ListEvents(ctx context.Context, date int64) ([]ListEventsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listEvents, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListEventsRow
+	for rows.Next() {
+		var i ListEventsRow
+		if err := rows.Scan(&i.Name, &i.Slug, &i.Date); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

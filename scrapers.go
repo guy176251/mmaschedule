@@ -20,6 +20,7 @@ import (
 type ClientScraper interface {
 	Get(url string, options ...RequestOption) (*goquery.Selection, error)
 	AddHeader(key string, value string)
+	HasHeader(key string) bool
 }
 
 func ScrapeONE(client ClientScraper) (*[]*event.Event, error) {
@@ -236,8 +237,10 @@ func ScrapeUFCFighter(s *goquery.Selection, color string) *event.Fighter {
 	return &fighter
 }
 
+const TAPOLOGY_URL = "https://www.tapology.com"
+
 func SetTapologyCSRF(client ClientScraper) error {
-	selection, err := client.Get("https://www.tapology.com")
+	selection, err := client.Get(TAPOLOGY_URL)
 	if err != nil {
 		return err
 	}
@@ -257,7 +260,11 @@ type TapologyResult struct {
 }
 
 func GetTapologyLink(client ClientScraper, name string) (string, error) {
-	selection, err := client.Get("https://www.tapology.com/search/nav", func(r *http.Request) {
+	if !client.HasHeader("X-CSRF-Token") {
+		return "", fmt.Errorf("CSRF token not set.")
+	}
+
+	selection, err := client.Get(TAPOLOGY_URL+"/search/nav", func(r *http.Request) {
 		query := url.Values{}
 		query.Set("ajax", "true")
 		query.Set("model", "fighters")
@@ -294,5 +301,5 @@ func GetTapologyLink(client ClientScraper, name string) (string, error) {
 		}
 	})
 
-	return results[0].Url, nil
+	return TAPOLOGY_URL + results[0].Url, nil
 }
