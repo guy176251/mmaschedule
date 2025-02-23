@@ -1,0 +1,284 @@
+package main
+
+import "mmaschedule-go/event"
+import "strconv"
+
+templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
+	<html data-theme="night">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width"/>
+			<title>MMA Schedule</title>
+			<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+            //@import "tailwindcss";
+			<style>
+                @tailwind base;
+                @tailwind components;
+                @tailwind utilities;
+            </style>
+		</head>
+		<body>
+			<div class="h-screen overflow-scroll bg-neutral-focus text-neutral-content fill-neutral-content">
+				<div class="drawer drawer-mobile">
+					<input id="my-drawer-3" type="checkbox" class="drawer-toggle"/>
+					<div class="drawer-content flex flex-col">
+						<div class="w-full navbar bg-neutral sticky top-0 shadow-2xl z-50 text-neutral-content">
+							<div class="flex-none lg:hidden">
+								<label for="my-drawer-3" class="btn btn-square btn-ghost text-xl">
+									<svg class="inline w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+										<path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"></path>
+									</svg>
+								</label>
+							</div>
+							<a href="/" class="btn btn-ghost normal-case text-xl">MMA Schedule</a>
+						</div>
+						<div class="hidden lg:block">
+							<div
+								class="h-[450px] 2xl:h-[550px] bg-cover bg-[center_top_-14rem] text-white fill-white"
+								style={ "background-image: url(" + e.Image + ");" }
+							>
+								<div class="h-full w-full bg-black/50 grid px-32">
+									<div class="place-self-center flex flex-col">
+										<p class="text-6xl font-light tracking-tighter border-b pb-4">
+											{ e.Name }
+										</p>
+										<div class="pt-3 text-lg font-extrabold tracking-tighter grid justify-items-left gap-1 w-fit place-self-center">
+											<p>
+												@TemplIconCalendar("mr-2")
+												@TemplTimestamp(e.Date)
+											</p>
+											if len(e.Location) > 0 {
+												<p>
+													@TemplIconLocation("mr-2")
+													{ e.Location }
+												</p>
+											}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="py-4 px-2 mx-auto container">
+							<div class="lg:hidden">
+								<div class="hero bg-neutral mb-4 rounded">
+									<div class="hero-content flex-col justify-between">
+										<div class="flex-1 grow">
+											<img
+												src={ e.Image }
+												class="rounded-lg shadow-2xl object-cover aspect-[16/9]"
+											/>
+										</div>
+										<div class="flex-1 grow py-2 w-full flex flex-col items-center">
+											<p class="text-3xl font-bold border-b-4 w-fit pb-3 border-red-500">
+												{ e.Name }
+											</p>
+											<div>
+												<div class="pt-3 flex align-top content-center">
+													@TemplIconCalendar("mr-2")
+													@TemplTimestamp(e.Date)
+												</div>
+												if len(e.Location) > 0 {
+													<p class="pt-2">
+														@TemplIconLocation("mr-1")
+														{ e.Location }
+													</p>
+												}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="flex flex-col gap-4">
+								for _, f := range e.UnmarshalFights() {
+									@TemplFightRow(f)
+								}
+							</div>
+						</div>
+					</div>
+					<div class="drawer-side">
+						<label for="my-drawer-3" class="drawer-overlay"></label>
+						<ul class="menu p-4 w-80 bg-neutral text-neutral-content">
+							<li>
+								<a>
+									<p class="text-2xl mb-2 pb-2 border-b-2 border-accent rounded-b-none">
+										Upcoming Events
+									</p>
+								</a>
+							</li>
+							for _, u := range upcoming {
+								<li class="menu-title">
+									@TemplTimestamp(u.Date)
+								</li>
+								<li>
+									<a class="pt-0" href={ templ.URL("/events/" + u.Slug + "/") }>
+										{ u.Name }
+									</a>
+								</li>
+							}
+						</ul>
+					</div>
+				</div>
+			</div>
+			@TemplJSTimestamp()
+		</body>
+	</html>
+}
+
+templ TemplFightRow(f *event.Fight) {
+	<div class="w-full px-4 pb-4 pt-1 rounded bg-neutral text-neutral-content">
+		<div class="w-full flex justify-center">
+			<p
+				class="pb-1 mb-4 text-lg font-extrabold border-b border-neutral-content w-fit"
+			>
+				{ f.Weight }
+			</p>
+		</div>
+		<div class="grid grid-cols-5">
+			@TemplFighterCol(f.FighterA, false)
+			<div class="px-2 flex">
+				<div class="self-center w-full">
+					<p class="text-2xl font-extrabold text-center">VS</p>
+				</div>
+			</div>
+			@TemplFighterCol(f.FighterB, true)
+		</div>
+	</div>
+}
+
+templ TemplFighterCol(f *event.Fighter, right bool) {
+	<div class="col-span-2">
+		<a
+			if len(f.Link) > 0 {
+				target="_blank"
+				href={ templ.URL(f.Link) }
+				class="no-underline hover:underline"
+			}
+		>
+			<div
+				if right {
+					class="flex flex-col lg:flex-row lg:justify-end"
+				} else {
+					class="flex flex-col lg:flex-row"
+				}
+			>
+				<img
+					src={ f.Image }
+					loading="lazy"
+					alt=""
+					if right {
+						class="h-32 w-32 object-cover object-top rounded lg:order-2"
+					} else {
+						class="h-32 w-32 object-cover object-top rounded"
+					}
+				/>
+				<div
+					if right {
+						class="
+                                       lg:mx-5
+                                  mt-3 lg:mt-0
+                                  pt-1 lg:pt-0
+                            border-t-8 lg:border-t-0
+
+                            border-blue-500
+                            lg:border-r-8
+                            lg:pr-5
+                            lg:order-1
+                            text-right
+                        "
+					} else {
+						class="
+                                       lg:mx-5
+                                  mt-3 lg:mt-0
+                                  pt-1 lg:pt-0
+                            border-t-8 lg:border-t-0
+
+                            border-red-500
+                            lg:border-l-8
+                            lg:pl-5
+                        "
+					}
+				>
+					<p class="text-xl font-semibold mb-1 lg:mb-4">
+						{ f.Name }
+					</p>
+					if len(f.Country) > 0 {
+						<p class="text-sm lg:text-base">
+							{ f.Country }
+						</p>
+					}
+				</div>
+			</div>
+		</a>
+	</div>
+}
+
+templ TemplTimestamp(timestamp int64) {
+	<span data-timestamp={ strconv.FormatInt(timestamp, 10) }>
+		//{{ date|date:'D M j, g:i A T' }}
+	</span>
+}
+
+templ TemplIconLocation(class string) {
+	<svg class={ "w-6 h-6 inline " + class } xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+		<path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+	</svg>
+}
+
+templ TemplIconCalendar(class string) {
+	<svg class={ "inline w-6 h-6 " + class } xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+		<path
+			d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM5 7h14v2H5V7z"
+		></path>
+	</svg>
+}
+
+templ TemplJSTimestamp() {
+	<script>
+        (() => {
+            const DATA_TIMESTAMP = "data-timestamp";
+
+            const MONTHS = [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+            ];
+
+            const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+            for (const e of document.querySelectorAll(`[${DATA_TIMESTAMP}]`)) {
+                const timestamp = e.getAttribute(DATA_TIMESTAMP);
+                if (timestamp) {
+                    e.innerHTML = dateStr(+timestamp);
+                }
+            }
+
+            /** @param {number} timestamp */
+            function dateStr(timestamp) {
+                let d = new Date(timestamp * 1000);
+                let day = d.getDate(),
+                    month = MONTHS[d.getMonth()],
+                    hour = d.getHours() % 12 || 12,
+                    minute = `${d.getMinutes()}`.padStart(2, "0"),
+                    pm = d.getHours() >= 12 ? "PM" : "AM",
+                    dow = DAYS[d.getDay()];
+
+                let timezone = d
+                    .toLocaleString("en", { timeZoneName: "short" })
+                    .split(" ")
+                    .pop();
+
+                return `${dow} ${month} ${day}, ${hour}:${minute} ${pm} ${timezone}`;
+            }
+        })();
+    </script>
+}

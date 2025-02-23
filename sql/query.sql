@@ -16,7 +16,7 @@ FROM
 
 -- name: GetUpcomingEvent :one
 SELECT
-  *
+  slug
 FROM
   event
 WHERE

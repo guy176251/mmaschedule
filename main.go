@@ -16,15 +16,15 @@ import (
 var migrations embed.FS
 
 func main() {
-	q, err := InitDb("db.sqlite")
+	queries, err := InitDb("db.sqlite")
 	if err != nil {
 		fmt.Println("Error initializing database:", err)
-	} else {
-		client := NewScraperClient()
-		err := UpdateAllTapology(q, client)
-		if err != nil {
-			fmt.Println("Error updating all tapology:", err)
-		}
+		return
+	}
+
+	err = RunServer("0.0.0.0:3001", queries)
+	if err != nil {
+		fmt.Println("Error starting web server:", err)
 	}
 }
 

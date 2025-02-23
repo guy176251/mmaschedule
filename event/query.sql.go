@@ -74,7 +74,7 @@ func (q *Queries) GetTapology(ctx context.Context, name string) (Tapology, error
 
 const getUpcomingEvent = `-- name: GetUpcomingEvent :one
 SELECT
-  url, slug, name, location, organization, image, date, fights, history
+  slug
 FROM
   event
 WHERE
@@ -85,21 +85,11 @@ LIMIT
   1
 `
 
-func (q *Queries) GetUpcomingEvent(ctx context.Context, date int64) (Event, error) {
+func (q *Queries) GetUpcomingEvent(ctx context.Context, date int64) (string, error) {
 	row := q.db.QueryRowContext(ctx, getUpcomingEvent, date)
-	var i Event
-	err := row.Scan(
-		&i.Url,
-		&i.Slug,
-		&i.Name,
-		&i.Location,
-		&i.Organization,
-		&i.Image,
-		&i.Date,
-		&i.Fights,
-		&i.History,
-	)
-	return i, err
+	var slug string
+	err := row.Scan(&slug)
+	return slug, err
 }
 
 const listEvents = `-- name: ListEvents :many

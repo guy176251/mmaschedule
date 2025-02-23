@@ -1,3 +1,4 @@
 testdata/
 db.sqlite*
 test-db.sqlite*
+*_templ.go
