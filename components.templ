@@ -8,15 +8,8 @@ templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
 		<head>
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width"/>
+			<link rel="stylesheet" type="text/css" href="/static/styles.css"/>
 			<title>MMA Schedule</title>
-			<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css"/>
-			<script src="https://cdn.tailwindcss.com"></script>
-            //@import "tailwindcss";
-			<style>
-                @tailwind base;
-                @tailwind components;
-                @tailwind utilities;
-            </style>
 		</head>
 		<body>
 			<div class="h-screen overflow-scroll bg-neutral-focus text-neutral-content fill-neutral-content">

@@ -1,18 +1,39 @@
 package main
 
 import (
+	"embed"
+	"io/fs"
 	"mmaschedule-go/event"
 	"net/http"
 	"time"
 )
 
+//go:generate bun run build
+//go:generate templ generate
+
 func RunServer(addr string, queries *event.Queries) error {
 	mux := http.NewServeMux()
 	state := ServerState{queries: queries}
+	static, err := StaticHandler("/static/")
+	if err != nil {
+		return err
+	}
 	mux.HandleFunc("GET /", state.HandleFunc(RouteIndex))
 	mux.HandleFunc("GET /events/{slug}/", state.HandleFunc(RouteEvent))
-	err := http.ListenAndServe(addr, mux)
+	mux.Handle("GET /static/", static)
+	err = http.ListenAndServe(addr, mux)
 	return err
+}
+
+//go:embed static/*
+var staticFiles embed.FS
+
+func StaticHandler(prefix string) (http.Handler, error) {
+	static, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		return nil, err
+	}
+	return http.StripPrefix(prefix, http.FileServer(http.FS(static))), nil
 }
 
 func RouteIndex(w http.ResponseWriter, r *http.Request, q *event.Queries) {
