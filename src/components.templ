@@ -2,6 +2,7 @@ package main
 
 import "mmaschedule-go/event"
 import "strconv"
+import "time"
 
 templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
 	<html data-theme="night">
@@ -208,7 +209,7 @@ templ TemplFighterCol(f *event.Fighter, right bool) {
 
 templ TemplTimestamp(timestamp int64) {
 	<span data-timestamp={ strconv.FormatInt(timestamp, 10) }>
-		//{{ date|date:'D M j, g:i A T' }}
+		{ time.Unix(timestamp, 0).Format(time.RFC1123) }
 	</span>
 }
 
