@@ -4,8 +4,8 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"testing"
 	"net/http"
+	"testing"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -122,7 +122,6 @@ func TestUFC(t *testing.T) {
 	if len(*events) < 7 {
 		t.Fatal("Scraping UFC failed: Did not get all events")
 	}
-	//PrintJson(events)
 }
 
 func TestONE(t *testing.T) {
@@ -134,14 +133,16 @@ func TestONE(t *testing.T) {
 	if len(*events) == 0 {
 		t.Fatal("Scraping ONE failed: Events are empty")
 	}
-	//PrintJson(events)
+	if len(*events) < 4 {
+		t.Fatal("Scraping ONE failed: Did not get all events")
+	}
 }
 
 func TestScrapeEvents(t *testing.T) {
 	client := NewDummyClient()
-	q, err := InitDb("test-db.sqlite")
+	q, err := InitDb("db.sqlite")
 	if err != nil {
 		t.Error("Error initializing database: ", err)
 	}
-	ScrapeEvents(q, client)
+	ScrapeEvents(q, client, false)
 }
