@@ -2,13 +2,13 @@
     "version": "2",
     "sql": [
         {
-            "schema": "migrations/20240915072431_initial.sql",
-            "queries": "sql/query.sql",
+            "schema": "src/migrations/20240915072431_initial.sql",
+            "queries": "src/sql/query.sql",
             "engine": "sqlite",
             "gen": {
                 "go": {
                     "package": "event",
-                    "out": "event",
+                    "out": "src/event",
                     "emit_json_tags": true
                 }
             },

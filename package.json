@@ -12,8 +12,8 @@
         "tailwindcss": "^3.4.17"
     },
     "scripts": {
-        "build": "tailwindcss build -o static/styles.css --minify",
-        "watch": "tailwindcss build -o static/styles.css --watch",
+        "build": "tailwindcss build -o src/static/styles.css --minify",
+        "watch": "tailwindcss build -o src/static/styles.css --watch",
         "which": "which tailwindcss"
     }
 }
