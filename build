@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+main() {
+	cd src/ || return
+	bun run build
+	templ generate
+    go build -o mmaschedule
+}
+
+main

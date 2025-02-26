@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-//go:generate bun run build
-//go:generate templ generate
+//go:embed static/*
+var staticfiles embed.FS
 
 func RunServer(addr string, queries *event.Queries) error {
 	mux := http.NewServeMux()
@@ -28,11 +28,8 @@ func RunServer(addr string, queries *event.Queries) error {
 	return err
 }
 
-//go:embed static/*
-var staticFiles embed.FS
-
 func StaticHandler(prefix string) (http.Handler, error) {
-	static, err := fs.Sub(staticFiles, "static")
+	static, err := fs.Sub(staticfiles, "static")
 	if err != nil {
 		return nil, err
 	}
