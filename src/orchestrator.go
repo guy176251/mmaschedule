@@ -9,6 +9,11 @@ import (
 
 type Scraper func(ClientScraper) (*[]*event.Event, error)
 
+func ScrapeEventsLoop(q *event.Queries, client ClientScraper, tapology bool) {
+	time.Sleep(time.Duration(1) * time.Hour)
+	ScrapeEvents(q, client, tapology)
+}
+
 func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
 	events := []*event.Event{}
 	scrapers := []Scraper{
@@ -65,7 +70,7 @@ func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Eve
 						}
 						ff.Link = link
 					}
-					time.Sleep(time.Duration(5_000_000_000))
+                    time.Sleep(time.Duration(5) * time.Second)
 				} else {
 					ff.Link = tapology.Url
 				}

@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"flag"
 	"fmt"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -15,16 +17,43 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
+var host = flag.String("host", "127.0.0.1:8000", "Set the web server host address.")
+
+const POSITIONAL_ARGS_HELP = `
+Valid commands:
+    runserver: Runs the web server.
+    scrape: Runs the web scraper.
+`
+
 func main() {
+	flag.Parse()
+
+	if len(flag.Args()) == 0 {
+		fmt.Print(POSITIONAL_ARGS_HELP)
+		os.Exit(1)
+	}
+
+	cmd := flag.Args()[0]
+
+	client := NewScraperClient()
 	queries, err := InitDb("db.sqlite")
 	if err != nil {
 		fmt.Println("Error initializing database:", err)
 		return
 	}
 
-	err = RunServer("0.0.0.0:3001", queries)
-	if err != nil {
-		fmt.Println("Error starting web server:", err)
+	switch cmd {
+	case "runserver":
+		go ScrapeEventsLoop(queries, client, true)
+		err = RunServer(*host, queries)
+		if err != nil {
+			fmt.Println("Error starting web server:", err)
+		}
+	case "scrape":
+		ScrapeEvents(queries, client, true)
+	default:
+		fmt.Print(POSITIONAL_ARGS_HELP)
+		os.Exit(1)
 	}
 }
 
