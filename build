@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-main() {
-	cd src/ || return
-	bun run build
-	templ generate
-    go build -o mmaschedule
-}
+set -e
 
-main
+cd src/
+bun run build
+templ generate
+go build -o mmaschedule && mv mmaschedule ../
