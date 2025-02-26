@@ -55,7 +55,7 @@ func RouteEvent(w http.ResponseWriter, r *http.Request, q *event.Queries) {
 
 	event, err := q.GetEvent(r.Context(), slug)
 	if err != nil {
-		http.NotFound(w, r)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
