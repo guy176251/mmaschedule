@@ -36,6 +36,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *debug {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	} else {
+        slog.SetLogLoggerLevel(slog.LevelInfo)
+	}
+
 	f, err := os.OpenFile("mmaschedule.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
