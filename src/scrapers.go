@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -56,7 +56,7 @@ func ScrapeONE(client ClientScraper) (*[]*event.Event, error) {
 		err := ScrapeONEEvent(client, &e)
 
 		if err != nil {
-			log.Println(err)
+			slog.Error("Error scraping ONE event", "error", err)
 			return
 		}
 
@@ -159,7 +159,7 @@ func ScrapeUFC(client ClientScraper) (*[]*event.Event, error) {
 			}
 			err := ScrapeUFCEvent(client, &e)
 			if err != nil {
-				log.Println(err)
+				slog.Error("Error scraping UFC event", "error", err)
 			} else if e.Fights != "null" {
 				events = append(events, &e)
 			}

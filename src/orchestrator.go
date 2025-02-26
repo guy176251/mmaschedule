@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 	"mmaschedule-go/event"
 	"time"
 )
@@ -24,7 +24,7 @@ func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
 	for _, scraper := range scrapers {
 		e, err := scraper(client)
 		if err != nil {
-			fmt.Println("Error scraping events:", err)
+			slog.Error("Error scraping events", "error", err)
 		} else {
 			events = append(events, *e...)
 		}
@@ -37,7 +37,7 @@ func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
 	if len(events) > 0 {
 		err := q.UpsertEvents(context.Background(), events)
 		if err != nil {
-			fmt.Println("Error updating events in database:", err)
+			slog.Error("Error updating events in database:", "error", err)
 		}
 	}
 }
@@ -45,7 +45,7 @@ func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
 func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Event) {
 	err := SetTapologyCSRF(client)
 	if err != nil {
-		fmt.Println("Error settings tapology CSRF:", err)
+		slog.Error("Error settings tapology CSRF:", "error", err)
 	}
 
 	for _, e := range *events {
@@ -56,21 +56,21 @@ func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Eve
 				f.FighterB,
 			}
 			for _, ff := range fighters {
-				fmt.Println("Getting tapology link for", ff.Name)
+				slog.Debug("Getting tapology link", "name", ff.Name)
 				tapology, err := q.GetTapology(context.Background(), ff.Name)
 				if err != nil {
-					fmt.Println("Error getting tapology from database:", err)
+					slog.Error("Error getting tapology from database", "error", err)
 					link, err := GetTapologyLink(client, ff.Name)
 					if err != nil {
-						fmt.Println("Error getting tapology from site:", err)
+						slog.Error("Error getting tapology from site", "error", err)
 					} else if len(link) > 0 {
 						err := q.CreateTapology(context.Background(), event.CreateTapologyParams{Name: ff.Name, Url: link})
 						if err != nil {
-							fmt.Println("Error creating tapology in database:", err)
+							slog.Error("Error creating tapology in database", "error", err)
 						}
 						ff.Link = link
 					}
-                    time.Sleep(time.Duration(5) * time.Second)
+					time.Sleep(time.Duration(5) * time.Second)
 				} else {
 					ff.Link = tapology.Url
 				}

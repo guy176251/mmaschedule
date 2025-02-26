@@ -5,6 +5,8 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"log"
+	"log/slog"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -18,6 +20,7 @@ import (
 var migrations embed.FS
 
 var host = flag.String("host", "127.0.0.1:8000", "Set the web server host address.")
+var debug = flag.Bool("debug", false, "Enable debug mode.")
 
 const POSITIONAL_ARGS_HELP = `
 Valid commands:
@@ -33,12 +36,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	f, err := os.OpenFile("mmaschedule.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		os.Exit(1)
+	}
+
+	defer f.Close()
+	log.SetOutput(f)
+
 	cmd := flag.Args()[0]
 
 	client := NewScraperClient()
 	queries, err := InitDb("db.sqlite")
 	if err != nil {
-		fmt.Println("Error initializing database:", err)
+		slog.Error("Error initializing database", "error", err)
 		return
 	}
 
@@ -47,7 +59,7 @@ func main() {
 		go ScrapeEventsLoop(queries, client, true)
 		err = RunServer(*host, queries)
 		if err != nil {
-			fmt.Println("Error starting web server:", err)
+			slog.Error("Error starting web server:", "error", err)
 		}
 	case "scrape":
 		ScrapeEvents(queries, client, true)
