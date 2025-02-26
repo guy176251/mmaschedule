@@ -19,9 +19,6 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
-var host = flag.String("host", "127.0.0.1:8000", "Set the web server host address.")
-var debug = flag.Bool("debug", false, "Enable debug mode.")
-
 const POSITIONAL_ARGS_HELP = `
 Valid commands:
     runserver: Runs the web server.
@@ -29,6 +26,9 @@ Valid commands:
 `
 
 func main() {
+	var host = flag.String("host", "127.0.0.1:8000", "Set the web server host address.")
+	var debug = flag.Bool("debug", false, "Enable debug mode.")
+
 	flag.Parse()
 
 	if len(flag.Args()) == 0 {
@@ -39,12 +39,12 @@ func main() {
 	if *debug {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 	} else {
-        slog.SetLogLoggerLevel(slog.LevelInfo)
+		slog.SetLogLoggerLevel(slog.LevelInfo)
 	}
 
 	f, err := os.OpenFile("mmaschedule.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		fmt.Println("Failed opening log file", err)
 		os.Exit(1)
 	}
 
@@ -56,7 +56,7 @@ func main() {
 	client := NewScraperClient()
 	queries, err := InitDb("db.sqlite")
 	if err != nil {
-		slog.Error("Error initializing database", "error", err)
+		slog.Error("Failed initializing database", "error", err)
 		return
 	}
 

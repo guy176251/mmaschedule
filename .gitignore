@@ -5,3 +5,4 @@ test-db.sqlite*
 node_modules/
 styles.css
 mmaschedule
+mmaschedule.log

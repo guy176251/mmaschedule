@@ -37,7 +37,7 @@ func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
 	if len(events) > 0 {
 		err := q.UpsertEvents(context.Background(), events)
 		if err != nil {
-			slog.Error("Error updating events in database:", "error", err)
+			slog.Error("Failed updating events in database", "error", err)
 		}
 	}
 }
@@ -45,7 +45,7 @@ func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
 func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Event) {
 	err := SetTapologyCSRF(client)
 	if err != nil {
-		slog.Error("Error settings tapology CSRF:", "error", err)
+		slog.Error("Failed settings tapology CSRF", "error", err)
 	}
 
 	for _, e := range *events {
@@ -59,14 +59,14 @@ func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Eve
 				slog.Debug("Getting tapology link", "name", ff.Name)
 				tapology, err := q.GetTapology(context.Background(), ff.Name)
 				if err != nil {
-					slog.Error("Error getting tapology from database", "error", err)
+					slog.Error("Failed getting tapology from database", "name", ff.Name, "error", err)
 					link, err := GetTapologyLink(client, ff.Name)
 					if err != nil {
-						slog.Error("Error getting tapology from site", "error", err)
+						slog.Error("Failed getting tapology from site", "name", ff.Name, "error", err)
 					} else if len(link) > 0 {
 						err := q.CreateTapology(context.Background(), event.CreateTapologyParams{Name: ff.Name, Url: link})
 						if err != nil {
-							slog.Error("Error creating tapology in database", "error", err)
+							slog.Error("Failed creating tapology in database", "name", ff.Name, "error", err)
 						}
 						ff.Link = link
 					}
