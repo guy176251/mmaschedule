@@ -142,6 +142,8 @@ func ScrapeONEFighter(s *goquery.Selection, is_a bool) *event.Fighter {
 	return &fighter
 }
 
+const UFC_URL = "https://www.ufc.com"
+
 func ScrapeUFC(client ClientScraper) (*[]*event.Event, error) {
 	events := []*event.Event{}
 	page, err := client.Get("https://www.ufc.com/events")
@@ -154,7 +156,7 @@ func ScrapeUFC(client ClientScraper) (*[]*event.Event, error) {
 		slug, exists := s.Attr("href")
 		if exists {
 			e := event.Event{
-				Url:          "https://www.ufc.com" + slug,
+				Url:          UFC_URL + slug,
 				Organization: "UFC",
 				Slug:         strings.Replace(slug, "/event/", "", 1),
 			}
@@ -189,6 +191,9 @@ func ScrapeUFCEvent(client ClientScraper, e *event.Event) error {
 
 	image, exists := page.Find(".c-hero__image img").First().Attr("src")
 	if exists {
+		if strings.HasPrefix(image, "/") {
+			image = UFC_URL + image
+		}
 		e.Image = image
 	}
 
