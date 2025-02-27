@@ -269,7 +269,7 @@ func GetTapologyLink(client ClientScraper, name string) (string, error) {
 		return "", fmt.Errorf("CSRF token not set.")
 	}
 
-	slog.Debug("Scraping tapology link", "name", name) 
+	slog.Debug("Scraping tapology link", "name", name)
 
 	selection, err := client.Get(TAPOLOGY_URL+"/search/nav", func(r *http.Request) {
 		query := url.Values{}
@@ -292,7 +292,7 @@ func GetTapologyLink(client ClientScraper, name string) (string, error) {
 	})
 
 	if len(results) == 0 {
-		return "", nil
+		return "", fmt.Errorf("No tapology results for %s", name)
 	}
 
 	slices.SortStableFunc(results, func(a, b TapologyResult) int {
@@ -308,5 +308,11 @@ func GetTapologyLink(client ClientScraper, name string) (string, error) {
 		}
 	})
 
-	return TAPOLOGY_URL + results[0].Url, nil
+	link := TAPOLOGY_URL + results[0].Url
+
+	if len(link) == 0 {
+		return "", fmt.Errorf("Tapology link is empty for %s", name)
+	} else {
+		return TAPOLOGY_URL + results[0].Url, nil
+	}
 }

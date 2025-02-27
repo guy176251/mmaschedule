@@ -12,7 +12,7 @@ type Scraper func(ClientScraper) (*[]*event.Event, error)
 func ScrapeEventsLoop(q *event.Queries, client ClientScraper, tapology bool) {
 	for {
 		time.Sleep(time.Duration(1) * time.Hour)
-        slog.Debug("Running hourly scraper")
+		slog.Debug("Running hourly scraper")
 		ScrapeEvents(q, client, tapology)
 	}
 }
@@ -66,7 +66,7 @@ func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Eve
 					link, err := GetTapologyLink(client, ff.Name)
 					if err != nil {
 						slog.Error("Failed getting tapology from site", "name", ff.Name, "error", err)
-					} else if len(link) > 0 {
+					} else {
 						slog.Debug("Got new tapology link", "name", ff.Name, "link", link)
 						err := q.CreateTapology(context.Background(), event.CreateTapologyParams{Name: ff.Name, Url: link})
 						if err != nil {
