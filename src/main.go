@@ -28,6 +28,8 @@ Valid commands:
 func main() {
 	var host = flag.String("host", "127.0.0.1:8000", "Set the web server host address.")
 	var debug = flag.Bool("debug", false, "Enable debug mode.")
+	var notapology = flag.Bool("no-tapology", false, "Disable scraping tapology")
+	var noscraping = flag.Bool("no-scraping", false, "Disable scraping on runserver")
 
 	flag.Parse()
 
@@ -62,13 +64,16 @@ func main() {
 
 	switch cmd {
 	case "runserver":
-		go ScrapeEventsLoop(queries, client, true)
+		if !*noscraping {
+            slog.Debug("Starting scraping loop")
+			go ScrapeEventsLoop(queries, client, !*notapology)
+		}
 		err = RunServer(*host, queries)
 		if err != nil {
 			slog.Error("Error starting web server:", "error", err)
 		}
 	case "scrape":
-		ScrapeEvents(queries, client, true)
+		ScrapeEvents(queries, client, !*notapology)
 	default:
 		fmt.Print(POSITIONAL_ARGS_HELP)
 		os.Exit(1)

@@ -10,8 +10,11 @@ import (
 type Scraper func(ClientScraper) (*[]*event.Event, error)
 
 func ScrapeEventsLoop(q *event.Queries, client ClientScraper, tapology bool) {
-	time.Sleep(time.Duration(1) * time.Hour)
-	ScrapeEvents(q, client, tapology)
+	for {
+		time.Sleep(time.Duration(1) * time.Hour)
+        slog.Debug("Running hourly scraper")
+		ScrapeEvents(q, client, tapology)
+	}
 }
 
 func ScrapeEvents(q *event.Queries, client ClientScraper, tapology bool) {
@@ -56,7 +59,7 @@ func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Eve
 				f.FighterB,
 			}
 			for _, ff := range fighters {
-				slog.Debug("Getting tapology link", "name", ff.Name)
+				slog.Debug("Getting tapology link from database", "name", ff.Name)
 				tapology, err := q.GetTapology(context.Background(), ff.Name)
 				if err != nil {
 					slog.Error("Failed getting tapology from database", "name", ff.Name, "error", err)
@@ -64,6 +67,7 @@ func UpdateTapology(q *event.Queries, client ClientScraper, events *[]*event.Eve
 					if err != nil {
 						slog.Error("Failed getting tapology from site", "name", ff.Name, "error", err)
 					} else if len(link) > 0 {
+						slog.Debug("Got new tapology link", "name", ff.Name, "link", link)
 						err := q.CreateTapology(context.Background(), event.CreateTapologyParams{Name: ff.Name, Url: link})
 						if err != nil {
 							slog.Error("Failed creating tapology in database", "name", ff.Name, "error", err)

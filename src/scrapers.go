@@ -52,7 +52,6 @@ func ScrapeONE(client ClientScraper) (*[]*event.Event, error) {
 				"/",
 			),
 		}
-
 		err := ScrapeONEEvent(client, &e)
 
 		if err != nil {
@@ -82,6 +81,8 @@ type ONEEventData struct {
 }
 
 func ScrapeONEEvent(client ClientScraper, e *event.Event) error {
+	slog.Debug("Getting ONE Event", "url", e.Url)
+
 	page, err := client.Get(e.Url)
 
 	if err != nil {
@@ -170,6 +171,8 @@ func ScrapeUFC(client ClientScraper) (*[]*event.Event, error) {
 }
 
 func ScrapeUFCEvent(client ClientScraper, e *event.Event) error {
+	slog.Debug("Getting UFC Event", "url", e.Url)
+
 	page, err := client.Get(e.Url)
 
 	if err != nil {
@@ -240,6 +243,8 @@ func ScrapeUFCFighter(s *goquery.Selection, color string) *event.Fighter {
 const TAPOLOGY_URL = "https://www.tapology.com"
 
 func SetTapologyCSRF(client ClientScraper) error {
+	slog.Debug("Setting tapology CSRF token")
+
 	selection, err := client.Get(TAPOLOGY_URL)
 	if err != nil {
 		return err
@@ -263,6 +268,8 @@ func GetTapologyLink(client ClientScraper, name string) (string, error) {
 	if !client.HasHeader("X-CSRF-Token") {
 		return "", fmt.Errorf("CSRF token not set.")
 	}
+
+	slog.Debug("Scraping tapology link", "name", name) 
 
 	selection, err := client.Get(TAPOLOGY_URL+"/search/nav", func(r *http.Request) {
 		query := url.Values{}
