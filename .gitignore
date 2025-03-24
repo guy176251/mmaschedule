@@ -3,6 +3,5 @@ db.sqlite*
 test-db.sqlite*
 *_templ.go
 node_modules/
-styles.css
 mmaschedule
 mmaschedule.log
