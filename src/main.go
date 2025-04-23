@@ -56,7 +56,8 @@ func main() {
 	cmd := flag.Args()[0]
 
 	client := NewScraperClient()
-	queries, err := InitDb("db.sqlite")
+	db, err := InitDb("db.sqlite")
+
 	if err != nil {
 		slog.Error("Failed initializing database", "error", err)
 		return
@@ -66,14 +67,14 @@ func main() {
 	case "runserver":
 		if !*noscraping {
             slog.Debug("Starting scraping loop")
-			go ScrapeEventsLoop(queries, client, !*notapology)
+			go ScrapeEventsLoop(db, client, !*notapology)
 		}
-		err = RunServer(*host, queries)
+		err = RunServer(*host, db)
 		if err != nil {
 			slog.Error("Error starting web server:", "error", err)
 		}
 	case "scrape":
-		ScrapeEvents(queries, client, !*notapology)
+		ScrapeEvents(db, client, !*notapology)
 	default:
 		fmt.Print(POSITIONAL_ARGS_HELP)
 		os.Exit(1)

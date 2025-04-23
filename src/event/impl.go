@@ -29,6 +29,34 @@ func (e *Event) MarshalFights(fights []*Fight) {
 	e.Fights = string(buf)
 }
 
+func (e *Event) HasEmptyFights() bool {
+	fights := e.UnmarshalFights()
+
+	if len(fights) == 0 {
+		return true
+	}
+
+	for _, f := range fights {
+		if f.IsEmpty() {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (f *Fight) IsEmpty() bool {
+	return f.FighterA.IsEmpty() && f.FighterB.IsEmpty()
+}
+
+func (f *Fighter) IsEmpty() bool {
+	return isEmpty(f.Country) && isEmpty(f.Image) && isEmpty(f.Link) && isEmpty(f.Name)
+}
+
+func isEmpty(s string) bool {
+	return len(s) == 0
+}
+
 const upsertEvents = `-- name: UpsertEvents :exec
 INSERT INTO
   event (

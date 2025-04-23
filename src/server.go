@@ -14,9 +14,9 @@ import (
 //go:embed static/*
 var staticfiles embed.FS
 
-func RunServer(addr string, queries *event.Queries) error {
+func RunServer(addr string, db *event.Queries) error {
 	mux := http.NewServeMux()
-	state := ServerState{queries: queries}
+	state := ServerState{db}
 	static, err := StaticHandler("/static/")
 	if err != nil {
 		return err
@@ -36,8 +36,8 @@ func StaticHandler(prefix string) (http.Handler, error) {
 	return http.StripPrefix(prefix, http.FileServer(http.FS(static))), nil
 }
 
-func RouteIndex(w http.ResponseWriter, r *http.Request, q *event.Queries) {
-	slug, err := q.GetUpcomingEvent(r.Context(), EventTime())
+func RouteIndex(w http.ResponseWriter, r *http.Request, db *event.Queries) {
+	slug, err := db.GetUpcomingEvent(r.Context(), EventTime())
 	if err != nil {
 		http.NotFound(w, r)
 	} else {
@@ -45,7 +45,7 @@ func RouteIndex(w http.ResponseWriter, r *http.Request, q *event.Queries) {
 	}
 }
 
-func RouteEvent(w http.ResponseWriter, r *http.Request, q *event.Queries) {
+func RouteEvent(w http.ResponseWriter, r *http.Request, db *event.Queries) {
 	slug := r.PathValue("slug")
 
 	if len(slug) == 0 {
@@ -53,13 +53,13 @@ func RouteEvent(w http.ResponseWriter, r *http.Request, q *event.Queries) {
 		return
 	}
 
-	event, err := q.GetEvent(r.Context(), slug)
+	event, err := db.GetEvent(r.Context(), slug)
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
-	upcoming, err := q.ListUpcomingEvents(r.Context(), EventTime())
+	upcoming, err := db.ListUpcomingEvents(r.Context(), EventTime())
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -89,11 +89,11 @@ func EnvTime() (int64, error) {
 type StateHandler func(w http.ResponseWriter, r *http.Request, q *event.Queries)
 
 type ServerState struct {
-	queries *event.Queries
+	db *event.Queries
 }
 
 func (state *ServerState) HandleFunc(handler StateHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, state.queries)
+		handler(w, r, state.db)
 	}
 }
