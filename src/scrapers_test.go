@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"mmaschedule-go/event"
 	"net/http"
 	"testing"
 
@@ -55,6 +56,9 @@ var ONE172 []byte
 //go:embed testdata/tapology-index.html
 var TapologyIndex []byte
 
+//go:embed testdata/ufc-fight-night-april-26-2025.html
+var UFCIncorrectlyFormatted1 []byte
+
 var HTMLContent map[string][]byte = map[string][]byte{
 	"https://www.ufc.com/events":                                 UFCEventList,
 	"https://www.ufc.com/event/ufc-312":                          UFC312,
@@ -71,6 +75,7 @@ var HTMLContent map[string][]byte = map[string][]byte{
 	"https://www.onefc.com/events/onefightnight29/":              ONEFN29,
 	"https://www.onefc.com/events/one172/":                       ONE172,
 	"https://www.tapology.com":                                   TapologyIndex,
+	"incorrectly-formatted-1":                                    UFCIncorrectlyFormatted1,
 }
 
 type DummyClient struct {
@@ -145,4 +150,29 @@ func TestScrapeEvents(t *testing.T) {
 		t.Error("Error initializing database: ", err)
 	}
 	ScrapeEvents(q, client, false)
+}
+
+func TestUFCEventIncorrectlyFormatted1(t *testing.T) {
+	client := NewDummyClient()
+	event := event.Event{Url: "incorrectly-formatted-1"}
+	err := ScrapeUFCEvent(client, &event)
+	if err != nil {
+		t.Errorf("Scraping UFC failed: %s", err)
+	}
+	fight := event.UnmarshalFights()[1]
+
+	if FighterIsIncomplete(fight.FighterA) {
+		t.Error("FighterA is empty")
+	}
+	if FighterIsIncomplete(fight.FighterB) {
+		t.Error("FighterB is empty")
+	}
+	if len(fight.Weight) == 0 {
+		t.Error("Weight is missing")
+	}
+
+}
+
+func FighterIsIncomplete(f *event.Fighter) bool {
+	return len(f.Country) == 0 || len(f.Image) == 0 || len(f.Name) == 0
 }
