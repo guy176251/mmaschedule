@@ -13,31 +13,31 @@ templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
 			<title>MMA Schedule</title>
 		</head>
 		<body>
-			<div class="h-screen overflow-scroll bg-neutral-focus text-neutral-content fill-neutral-content">
+			<div class="h-screen overflow-scroll bg-neutral-focus fill-neutral-content text-neutral-content">
 				<div class="drawer drawer-mobile">
 					<input id="my-drawer-3" type="checkbox" class="drawer-toggle"/>
 					<div class="drawer-content flex flex-col">
-						<div class="w-full navbar bg-neutral sticky top-0 shadow-2xl z-50 text-neutral-content">
+						<div class="navbar sticky top-0 z-50 w-full bg-neutral text-neutral-content shadow-2xl">
 							<div class="flex-none lg:hidden">
 								<label for="my-drawer-3" class="btn btn-square btn-ghost text-xl">
-									<svg class="inline w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+									<svg class="inline h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
 										<path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"></path>
 									</svg>
 								</label>
 							</div>
-							<a href="/" class="btn btn-ghost normal-case text-xl">MMA Schedule</a>
+							<a href="/" class="btn btn-ghost text-xl normal-case">MMA Schedule</a>
 						</div>
 						<div class="hidden lg:block">
 							<div
-								class="h-[450px] 2xl:h-[550px] bg-cover bg-[center_top_-14rem] text-white fill-white"
+								class="h-[450px] bg-cover bg-[center_top_-14rem] fill-white text-white 2xl:h-[550px]"
 								style={ "background-image: url(" + e.Image + ");" }
 							>
-								<div class="h-full w-full bg-black/50 grid px-32">
-									<div class="place-self-center flex flex-col">
-										<p class="text-6xl font-light tracking-tighter border-b pb-4">
+								<div class="grid h-full w-full bg-black/50 px-32">
+									<div class="flex flex-col place-self-center">
+										<p class="border-b pb-4 text-6xl font-light tracking-tighter">
 											{ e.Name }
 										</p>
-										<div class="pt-3 text-lg font-extrabold tracking-tighter grid justify-items-left gap-1 w-fit place-self-center">
+										<div class="justify-items-left grid w-fit gap-1 place-self-center pt-3 text-lg font-extrabold tracking-tighter">
 											<p>
 												@TemplIconCalendar("mr-2")
 												@TemplTimestamp(e.Date)
@@ -53,22 +53,22 @@ templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
 								</div>
 							</div>
 						</div>
-						<div class="py-4 px-2 mx-auto container">
+						<div class="container mx-auto px-2 py-4">
 							<div class="lg:hidden">
-								<div class="hero bg-neutral mb-4 rounded">
+								<div class="hero mb-4 rounded bg-neutral">
 									<div class="hero-content flex-col justify-between">
 										<div class="flex-1 grow">
 											<img
 												src={ e.Image }
-												class="rounded-lg shadow-2xl object-cover aspect-[16/9]"
+												class="aspect-[16/9] rounded-lg object-cover shadow-2xl"
 											/>
 										</div>
-										<div class="flex-1 grow py-2 w-full flex flex-col items-center">
-											<p class="text-3xl font-bold border-b-4 w-fit pb-3 border-red-500">
+										<div class="flex w-full flex-1 grow flex-col items-center py-2">
+											<p class="w-fit border-b-4 border-red-500 pb-3 text-3xl font-bold">
 												{ e.Name }
 											</p>
 											<div>
-												<div class="pt-3 flex align-top content-center">
+												<div class="flex content-center pt-3 align-top">
 													@TemplIconCalendar("mr-2")
 													@TemplTimestamp(e.Date)
 												</div>
@@ -92,10 +92,10 @@ templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
 					</div>
 					<div class="drawer-side">
 						<label for="my-drawer-3" class="drawer-overlay"></label>
-						<ul class="menu p-4 w-80 bg-neutral text-neutral-content">
+						<ul class="menu w-80 bg-neutral p-4 text-neutral-content">
 							<li>
 								<a>
-									<p class="text-2xl mb-2 pb-2 border-b-2 border-accent rounded-b-none">
+									<p class="mb-2 rounded-b-none border-b-2 border-accent pb-2 text-2xl">
 										Upcoming Events
 									</p>
 								</a>
@@ -120,19 +120,19 @@ templ TemplEventPage(e event.Event, upcoming []event.ListUpcomingEventsRow) {
 }
 
 templ TemplFightRow(f *event.Fight) {
-	<div class="w-full px-4 pb-4 pt-1 rounded bg-neutral text-neutral-content">
-		<div class="w-full flex justify-center">
+	<div class="w-full rounded bg-neutral px-4 pb-4 pt-1 text-neutral-content">
+		<div class="flex w-full justify-center">
 			<p
-				class="pb-1 mb-4 text-lg font-extrabold border-b border-neutral-content w-fit"
+				class="mb-4 w-fit border-b border-neutral-content pb-1 text-lg font-extrabold"
 			>
 				{ f.Weight }
 			</p>
 		</div>
 		<div class="grid grid-cols-5">
 			@TemplFighterCol(f.FighterA, false)
-			<div class="px-2 flex">
-				<div class="self-center w-full">
-					<p class="text-2xl font-extrabold text-center">VS</p>
+			<div class="flex px-2">
+				<div class="w-full self-center">
+					<p class="text-center text-2xl font-extrabold">VS</p>
 				</div>
 			</div>
 			@TemplFighterCol(f.FighterB, true)
@@ -161,27 +161,27 @@ templ TemplFighterCol(f *event.Fighter, right bool) {
 					loading="lazy"
 					alt=""
 					if right {
-						class="h-32 w-32 object-cover object-top rounded lg:order-2"
+						class="h-32 w-32 rounded object-cover object-top lg:order-2"
 					} else {
-						class="h-32 w-32 object-cover object-top rounded"
+						class="h-32 w-32 rounded object-cover object-top"
 					}
 				/>
 				<div
 					if right {
-						class="           mt-3    pt-1    border-t-8
-                               lg:mx-5 lg:mt-0 lg:pt-0 lg:border-t-0
+						class="           mt-3    border-t-8    border-blue-500
+                               pt-1 text-right lg:order-1 lg:mx-5
 
-                            border-blue-500 lg:border-r-8 lg:pr-5 lg:order-1 text-right
+                            lg:mt-0 lg:border-r-8 lg:border-t-0 lg:pr-5 lg:pt-0
                         "
 					} else {
-						class="           mt-3    pt-1    border-t-8
-                               lg:mx-5 lg:mt-0 lg:pt-0 lg:border-t-0
+						class="           mt-3    border-t-8    border-red-500
+                               pt-1 lg:mx-5 lg:mt-0 lg:border-l-8
 
-                            border-red-500 lg:border-l-8 lg:pl-5
+                            lg:border-t-0 lg:pl-5 lg:pt-0
                         "
 					}
 				>
-					<p class="text-xl font-semibold mb-1 lg:mb-4">
+					<p class="mb-1 text-xl font-semibold lg:mb-4">
 						{ f.Name }
 					</p>
 					if len(f.Country) > 0 {
