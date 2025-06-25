@@ -4,5 +4,4 @@ test-db.sqlite*
 node_modules/
 mmaschedule
 mmaschedule.log
-testdata/
 static/
