@@ -224,7 +224,7 @@ func ScrapeUFCEvent(client ClientScraper, e *event.Event) error {
 func ScrapeUFCFight(s *goquery.Selection) *event.Fight {
 	fight := event.Fight{}
 
-	fight.Weight = strings.Replace(TextContent(s, ".c-listing-fight__class-text"), " Bout", "", -1)
+	fight.Weight = strings.ReplaceAll(TextContent(s, ".c-listing-fight__class-text"), " Bout", "")
 	fight.FighterA = ScrapeUFCFighter(s, "red")
 	fight.FighterB = ScrapeUFCFighter(s, "blue")
 
@@ -239,6 +239,9 @@ func ScrapeUFCFighter(s *goquery.Selection, color string) *event.Fighter {
 
 	image, exists := s.Find(".c-listing-fight__corner-image--" + color + " img").First().Attr("src")
 	if exists {
+		if strings.HasPrefix(image, "/") {
+			image = UFC_URL + image
+		}
 		fighter.Image = image
 	}
 
