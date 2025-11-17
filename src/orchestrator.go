@@ -81,7 +81,6 @@ func UpdateTapology(db *event.Queries, client ClientScraper, events *[]*event.Ev
 
 				if err != nil {
 					slog.Error("Failed getting tapology from site", "name", ff.Name, "error", err)
-					continue
 				}
 
 				ff.Link = link
