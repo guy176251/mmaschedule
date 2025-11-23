@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
---PRAGMA journal_mode = WAL;
+PRAGMA journal_mode = WAL;
 
 CREATE TABLE event (
   url TEXT NOT NULL UNIQUE,
