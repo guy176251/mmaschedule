@@ -11,6 +11,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
+	//"github.com/enetx/surf" // better http scraper client
 )
 
 type Values = url.Values

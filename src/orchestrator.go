@@ -11,7 +11,7 @@ type Scraper func(ClientScraper) (*[]*event.Event, error)
 
 func ScrapeEventsLoop(db *event.Queries, client ClientScraper, tapology bool) {
 	for {
-		time.Sleep(time.Duration(1) * time.Hour)
+		time.Sleep(1 * time.Hour)
 		slog.Debug("Running hourly scraper")
 		ScrapeEvents(db, client, tapology)
 	}
@@ -39,15 +39,24 @@ func ScrapeEvents(db *event.Queries, client ClientScraper, tapology bool) {
 		}
 	}
 
+	if len(allEvents) == 0 {
+		return
+	}
+
 	if tapology {
 		UpdateTapology(db, client, &allEvents)
 	}
 
-	if len(allEvents) > 0 {
-		err := db.UpsertEvents(context.Background(), allEvents)
-		if err != nil {
-			slog.Error("Failed updating events in database", "error", err)
-		}
+	err := db.UpsertEvents(context.Background(), allEvents)
+	if err != nil {
+		slog.Error("Failed updating events in database", "error", err)
+		return
+	}
+
+	err = db.DeleteDuplicateEvents(context.Background(), allEvents)
+	if err != nil {
+		slog.Error("Failed clearing out duplicate events", "error", err)
+		return
 	}
 }
 

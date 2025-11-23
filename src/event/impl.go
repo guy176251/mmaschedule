@@ -103,3 +103,32 @@ func (q *Queries) UpsertEvents(ctx context.Context, e []*Event) error {
 	_, err = q.db.ExecContext(ctx, upsertEvents, string(b))
 	return err
 }
+
+const deleteDuplicateEvents = `
+WITH
+	names AS (SELECT value FROM json_each(?)),
+	urls AS (SELECT value FROM json_each(?))
+DELETE FROM event 
+WHERE 
+	name IN names
+	AND url NOT IN urls
+`
+
+func (q *Queries) DeleteDuplicateEvents(ctx context.Context, e []*Event) error {
+	var urls []string
+	var names []string
+	for _, event := range e {
+		urls = append(urls, event.Url)
+		names = append(names, event.Name)
+	}
+	urlsJson, err := json.Marshal(&urls)
+	if err != nil {
+		return err
+	}
+	namesJson, err := json.Marshal(&names)
+	if err != nil {
+		return err
+	}
+	_, err = q.db.ExecContext(ctx, deleteDuplicateEvents, string(namesJson), string(urlsJson))
+	return err
+}
