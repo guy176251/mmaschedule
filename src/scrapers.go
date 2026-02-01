@@ -291,9 +291,12 @@ func GetTapologyLink(client ClientScraper, name string) (string, error) {
 		return "", err
 	}
 
-	results := []TapologyResult{}
+	return ParseTapologyLinks(name, selection)
+}
 
-	selection.Find("span.star a[href]").Each(func(i int, s *goquery.Selection) {
+func ParseTapologyLinks(name string, selection *goquery.Selection) (string, error) {
+	results := []TapologyResult{}
+	selection.Find("a.star[href]").Each(func(i int, s *goquery.Selection) {
 		url, _ := s.Attr("href")
 		name := CleanupWhitespace(nickname.ReplaceAllString(s.Text(), ""))
 		results = append(results, TapologyResult{Name: name, Url: url})

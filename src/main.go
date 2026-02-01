@@ -5,6 +5,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"os"
@@ -51,7 +52,8 @@ func main() {
 	}
 
 	defer f.Close()
-	log.SetOutput(f)
+	w := io.MultiWriter(f, os.Stdout)
+	log.SetOutput(w)
 
 	cmd := flag.Args()[0]
 
@@ -66,7 +68,7 @@ func main() {
 	switch cmd {
 	case "runserver":
 		if !*noscraping {
-            slog.Debug("Starting scraping loop")
+			slog.Debug("Starting scraping loop")
 			go ScrapeEventsLoop(db, client, !*notapology)
 		}
 		err = RunServer(*host, db)

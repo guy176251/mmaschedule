@@ -10,10 +10,20 @@ import (
 type Scraper func(ClientScraper) (*[]*event.Event, error)
 
 func ScrapeEventsLoop(db *event.Queries, client ClientScraper, tapology bool) {
+	hour := time.NewTicker(1 * time.Hour)
+	day := time.NewTicker(24 * time.Hour)
 	for {
-		time.Sleep(1 * time.Hour)
-		slog.Debug("Running hourly scraper")
-		ScrapeEvents(db, client, tapology)
+		select {
+		case <-hour.C:
+			slog.Debug("Running hourly scraper")
+			ScrapeEvents(db, client, tapology)
+		case <-day.C:
+			slog.Debug("Cleaning out empty tapology urls")
+			err := db.DeleteEmptyTapology(context.Background())
+			if err != nil {
+				slog.Error("Failed to delete empty tapology urls", "error", err)
+			}
+		}
 	}
 }
 

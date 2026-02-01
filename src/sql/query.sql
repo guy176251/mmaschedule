@@ -53,3 +53,8 @@ INSERT INTO
   tapology (name, url)
 VALUES
   (?, ?);
+
+-- name: DeleteEmptyTapology :exec
+DELETE FROM tapology
+WHERE
+  url = ''

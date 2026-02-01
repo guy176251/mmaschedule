@@ -26,6 +26,17 @@ func (q *Queries) CreateTapology(ctx context.Context, arg CreateTapologyParams) 
 	return err
 }
 
+const deleteEmptyTapology = `-- name: DeleteEmptyTapology :exec
+DELETE FROM tapology
+WHERE
+  url = ''
+`
+
+func (q *Queries) DeleteEmptyTapology(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteEmptyTapology)
+	return err
+}
+
 const getEvent = `-- name: GetEvent :one
 SELECT
   url, slug, name, location, organization, image, date, fights, history

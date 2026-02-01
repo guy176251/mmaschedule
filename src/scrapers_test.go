@@ -59,6 +59,9 @@ var TapologyIndex []byte
 //go:embed testdata/ufc-fight-night-april-26-2025.html
 var UFCIncorrectlyFormatted1 []byte
 
+//go:embed testdata/tapology-search.html
+var TapologySearch []byte
+
 var HTMLContent map[string][]byte = map[string][]byte{
 	"https://www.ufc.com/events":                                 UFCEventList,
 	"https://www.ufc.com/event/ufc-312":                          UFC312,
@@ -177,4 +180,21 @@ func DontTestUFCEventIncorrectlyFormatted1(t *testing.T) {
 
 func FighterIsIncomplete(f *event.Fighter) bool {
 	return len(f.Country) == 0 || len(f.Image) == 0 || len(f.Name) == 0
+}
+
+func TestParseTapologyLinks(t *testing.T) {
+	r := bytes.NewReader(TapologySearch)
+	document, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		t.Error("Did not create document object", "error", err)
+	}
+	name := "Israel Adesanya"
+	url, err := ParseTapologyLinks(name, document.Selection)
+	if err != nil {
+		t.Error("Did not parse tapology links", "error", err)
+	}
+	if url == "" {
+		t.Error("Tapology link is empty")
+	}
+	t.Log("Got tapology link", "name", name, "url", url)
 }

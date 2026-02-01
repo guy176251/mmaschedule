@@ -3,6 +3,6 @@
 set -e
 
 cd src/
-bun run build
+npm run build
 templ generate
 go build -o mmaschedule && mv mmaschedule ../
